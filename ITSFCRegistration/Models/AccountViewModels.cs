@@ -67,8 +67,19 @@ namespace ITSFCRegistration.Models
         public bool RememberMe { get; set; }
     }
 
+    public class RegistrationCheckModel
+    {
+        [Key]
+        public string StudentID { get; set; }
+
+    }
+
     public class RegisterViewModel
     {
+
+        [Key]
+        public string StudentID { get; set; }
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]
@@ -85,8 +96,24 @@ namespace ITSFCRegistration.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [Display(Name = "Hometown")]
-        public string Hometown { get; set; }
+        public string CurrentClub { get; set; }
+
+        public string PreferredPosition { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string SecondName { get; set; }
+
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime DOB { get; set; }
+
+        [Required]
+        public string Mobile { get; set; }
+
+
     }
 
     public class ResetPasswordViewModel

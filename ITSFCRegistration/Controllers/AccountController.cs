@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -9,6 +7,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using ITSFCRegistration.Models;
+using System;
 
 namespace ITSFCRegistration.Controllers
 {
@@ -17,6 +16,7 @@ namespace ITSFCRegistration.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationDbContext _db;
 
         public AccountController()
         {
@@ -49,6 +49,18 @@ namespace ITSFCRegistration.Controllers
             private set
             {
                 _userManager = value;
+            }
+        }
+
+        public ApplicationDbContext DB
+        {
+            get
+            {
+                return _db ?? HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+            }
+            private set
+            {
+                _db = value;
             }
         }
 
@@ -149,9 +161,63 @@ namespace ITSFCRegistration.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
-        public ActionResult Register()
+        [HttpGet]
+        public ActionResult StartRegister(RegisterViewModel model)
+        {
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        public ActionResult RegisterPlayer()
         {
             return View();
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult ValidateRegistration( RegistrationCheckModel check )
+        {
+                var ValidStudent = DB.StudentsOnProgrammes.Where(sp => sp.STUDENT_ID == check.StudentID).FirstOrDefault();
+
+                if (ValidStudent != null)
+                {
+                var studentViewModel = new RegisterViewModel
+                {
+                    StudentID = ValidStudent.STUDENT_ID,
+                    FirstName = ValidStudent.FIRST_NAME,
+                    SecondName = ValidStudent.LAST_NAME,
+                    Email= ValidStudent.STUDENT_ID + "@mail.itsligo.ie"
+                };
+
+                return RedirectToAction("StartRegister", "Account",  studentViewModel);
+                }
+            ModelState.AddModelError("", "Invalid Student ID Are you registered on a course");
+            return View(check);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult PresentConfirmation(StudentProgramme FillRec)
+        {
+            return View();
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult ConfirmRegistration(StudentProgramme FillRec)
+        {
+            PasswordHasher pass = new PasswordHasher();
+            RegisterViewModel registration = new RegisterViewModel
+            {
+                Email = FillRec.STUDENT_ID + "@mail.itsligo.ie",
+                FirstName = FillRec.FIRST_NAME,
+                SecondName = FillRec.LAST_NAME,
+                StudentID = FillRec.STUDENT_ID
+
+            };
+
+            return RedirectToAction("Register", "Account", registration );
         }
 
         //
@@ -163,7 +229,20 @@ namespace ITSFCRegistration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Hometown = model.Hometown };
+                var user = new ApplicationUser
+                                {
+                                    UserName = model.Email,
+                                    Email = model.Email,
+                                     PhoneNumber = model.Mobile,
+                                     Mobile = model.Mobile,
+                                     FirstName = model.FirstName,
+                                     SecondName = model.SecondName,
+                                     StudentID = model.StudentID,
+                                     DOB = model.DOB,
+                                     EmailConfirmed = true,
+                                     CurrentClub = model.CurrentClub,
+                                     PreferredPosition = model.PreferredPosition
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -379,7 +458,7 @@ namespace ITSFCRegistration.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Hometown = model.Hometown };
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, CurrentClub = model.Hometown };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

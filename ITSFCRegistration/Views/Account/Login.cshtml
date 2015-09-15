@@ -1,11 +1,11 @@
 ﻿@using ITSFCRegistration.Models
 @model LoginViewModel
 @{
-    ViewBag.Title = "Log in";
+    ViewBag.Title = "Ckick On Register to Register";
 }
 
 <h2>@ViewBag.Title.</h2>
-<div class="row">
+@*@<div class="row">
     <div class="col-md-8">
         <section id="loginForm">
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
@@ -47,7 +47,7 @@
                 @* Enable this once you have account confirmation enabled for password reset functionality
                     <p>
                         @Html.ActionLink("Forgot your password?", "ForgotPassword")
-                    </p>*@
+                    </p>
             }
         </section>
     </div>
@@ -57,6 +57,7 @@
         </section>
     </div>
 </div>
+    *@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
